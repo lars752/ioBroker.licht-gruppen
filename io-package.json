@@ -1,0 +1,123 @@
+{
+    "common": {
+        "name": "licht-gruppen",
+        "version": "1.2.0",
+        "news": {
+            "1.2.0": {
+                "en": "Long press dims: lamps start at 1 % (or the current brightness) and get brighter until the switch is released; works with switches that report a hold signal (Matter Generic Switch PRESS_LONG). Group and lamp brightness datapoints. govee-smart may use its Cloud again; LAN-only check removed",
+                "de": "Lang-Druck dimmt: Lampen starten bei 1 % (bzw. aktueller Helligkeit) und werden heller, bis der Schalter losgelassen wird; für Schalter mit Halte-Signal (Matter Generic Switch PRESS_LONG). Helligkeits-Datenpunkte je Gruppe und Lampe. govee-smart darf wieder die Cloud nutzen, LAN-Prüfung entfernt"
+            },
+            "1.1.0": {
+                "en": "govee-smart in LAN-only mode as lamp source: own plain-text names per device, check that the lamp instance runs without cloud access (info.localOnly)",
+                "de": "govee-smart im reinen LAN-Betrieb als Lampen-Quelle: eigene Klartext-Namen je Gerät, Prüfung, dass die Lampen-Instanz ohne Cloud läuft (info.localOnly)"
+            },
+            "1.0.0": {
+                "en": "Initial release",
+                "de": "Erstveröffentlichung"
+            }
+        },
+        "titleLang": {
+            "en": "Light groups",
+            "de": "Licht Gruppen"
+        },
+        "desc": {
+            "en": "Connects switches (e.g. Sonoff Matter via matter.0) with lamps (e.g. Govee via govee-smart) in groups, addressed by plain-text device names; long press dims",
+            "de": "Verbindet Schalter (z. B. Sonoff Matter über matter.0) mit Lampen (z. B. Govee über govee-smart) in Gruppen, angesprochen über Klartext-Gerätenamen; Lang-Druck dimmt"
+        },
+        "authors": [
+            "Lars"
+        ],
+        "keywords": [
+            "light",
+            "switch",
+            "group",
+            "matter",
+            "govee",
+            "sonoff"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "licht-gruppen.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/lars752/ioBroker.licht-gruppen/main/admin/licht-gruppen.png",
+        "readme": "https://github.com/lars752/ioBroker.licht-gruppen/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "lighting",
+        "compact": false,
+        "connectionType": "local",
+        "dataSource": "push",
+        "messagebox": true,
+        "supportedMessages": {
+            "custom": true
+        },
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=5.0.19"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=6.12.2"
+            }
+        ]
+    },
+    "native": {
+        "switchAdapters": "matter.0",
+        "lampAdapters": "govee-smart.0",
+        "switchMode": "state",
+        "lampFeedback": true,
+        "syncOnStart": false,
+        "lockMs": 3000,
+        "dimTimeMs": 4000,
+        "dimStepMs": 300,
+        "dimStart": 1,
+        "longPressWaitMs": 800,
+        "pruneOnStart": true,
+        "logActions": false,
+        "devices": [],
+        "names": [],
+        "configJson": ""
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Mindestens ein Gerät zugeordnet",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.missing",
+            "type": "state",
+            "common": {
+                "role": "text",
+                "name": "Nicht gefundene Geräte (Gruppe: Klartext)",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "def": ""
+            },
+            "native": {}
+        }
+    ]
+}

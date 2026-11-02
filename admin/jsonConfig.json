@@ -1,0 +1,368 @@
+{
+  "type": "tabs",
+  "i18n": false,
+  "items": {
+    "main": {
+      "type": "panel",
+      "label": {
+        "de": "Einstellungen",
+        "en": "Settings"
+      },
+      "items": {
+        "_hint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Verbindet Schalter und Lampen über Gruppen (z. B. je Raum). Geräte werden mit ihrem Klartext-Namen aus den Quell-Adaptern eingetragen. Ob ein Gerät Schalter oder Lampe ist, ergibt sich aus der Instanz. Die Instanz muss für Dropdown und Einlesen laufen; nach dem Ändern der Instanzen zuerst speichern.",
+            "en": "Connects switches and lamps via groups (e.g. per room). Devices are entered by their plain-text name from the source adapters. Whether a device is a switch or a lamp follows from its instance. The instance must be running for the dropdown and the scan; after changing the instances, save first."
+          }
+        },
+        "switchAdapters": {
+          "type": "text",
+          "newLine": true,
+          "sm": 12,
+          "md": 6,
+          "label": {
+            "de": "Schalter-Instanzen (Komma-getrennt)",
+            "en": "Switch instances (comma separated)"
+          },
+          "help": {
+            "de": "z. B. matter.0",
+            "en": "e.g. matter.0"
+          }
+        },
+        "lampAdapters": {
+          "type": "text",
+          "sm": 12,
+          "md": 6,
+          "label": {
+            "de": "Lampen-Instanzen (Komma-getrennt)",
+            "en": "Lamp instances (comma separated)"
+          },
+          "help": {
+            "de": "z. B. govee-smart.0 - so, wie die Instanz im Objektbaum heißt",
+            "en": "e.g. govee-smart.0 - as the instance is named in the object tree"
+          }
+        },
+        "switchMode": {
+          "type": "select",
+          "newLine": true,
+          "sm": 12,
+          "md": 4,
+          "label": {
+            "de": "Verhalten der Schalter",
+            "en": "Switch behaviour"
+          },
+          "options": [
+            {
+              "value": "state",
+              "label": {
+                "de": "Schalter: Zustand an = Gruppe an",
+                "en": "Switch: state on = group on"
+              }
+            },
+            {
+              "value": "toggle",
+              "label": {
+                "de": "Taster: jede Änderung schaltet um",
+                "en": "Push button: every change toggles"
+              }
+            }
+          ]
+        },
+        "lampFeedback": {
+          "type": "checkbox",
+          "sm": 12,
+          "md": 4,
+          "label": {
+            "de": "Rückmeldung: Schalter folgen den Lampen (mind. eine an = an)",
+            "en": "Feedback: switches follow the lamps (at least one on = on)"
+          }
+        },
+        "lockMs": {
+          "type": "number",
+          "sm": 12,
+          "md": 4,
+          "min": 0,
+          "max": 60000,
+          "label": {
+            "de": "Sperrzeit nach Schaltbefehl (ms)",
+            "en": "Lock time after command (ms)"
+          },
+          "help": {
+            "de": "In dieser Zeit werden Lampen-Rückmeldungen nicht ausgewertet",
+            "en": "Lamp feedback is ignored during this time"
+          }
+        },
+        "syncOnStart": {
+          "type": "checkbox",
+          "newLine": true,
+          "sm": 12,
+          "md": 4,
+          "label": {
+            "de": "Beim Start Schalter an Lampen angleichen",
+            "en": "Align switches with lamps on start"
+          }
+        },
+        "pruneOnStart": {
+          "type": "checkbox",
+          "sm": 12,
+          "md": 4,
+          "label": {
+            "de": "Beim Start nicht mehr konfigurierte Datenpunkte löschen",
+            "en": "Delete data points that are no longer configured on start"
+          }
+        },
+        "logActions": {
+          "type": "checkbox",
+          "sm": 12,
+          "md": 4,
+          "label": {
+            "de": "Schaltvorgänge im Log (Stufe info) ausgeben",
+            "en": "Log switching actions (level info)"
+          }
+        },
+        "_dimHeader": {
+          "type": "header",
+          "size": 5,
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Lang-Druck: Dimmen",
+            "en": "Long press: dimming"
+          }
+        },
+        "_dimHint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Wird ein Schalter lang gedrückt, starten ausgeschaltete Lampen bei der Start-Helligkeit (eingeschaltete bei ihrer aktuellen Helligkeit) und werden heller, bis der Schalter losgelassen wird. Voraussetzung: Der Schalter meldet ein Halte-Signal (bei matter.0 der Datenpunkt PRESS_LONG). Welche Schalter das können, steht beim Start im Log.",
+            "en": "On a long press, lamps that are off start at the start brightness (lamps that are on at their current brightness) and get brighter until the switch is released. Requirement: the switch reports a hold signal (with matter.0 the datapoint PRESS_LONG). The log lists on start which switches support this."
+          }
+        },
+        "dimStart": {
+          "type": "number",
+          "newLine": true,
+          "sm": 6,
+          "md": 3,
+          "min": 1,
+          "max": 100,
+          "label": {
+            "de": "Start-Helligkeit (%)",
+            "en": "Start brightness (%)"
+          }
+        },
+        "dimTimeMs": {
+          "type": "number",
+          "sm": 6,
+          "md": 3,
+          "min": 500,
+          "max": 60000,
+          "label": {
+            "de": "Dimmdauer 1 -> 100 % (ms)",
+            "en": "Dimming time 1 -> 100 % (ms)"
+          }
+        },
+        "dimStepMs": {
+          "type": "number",
+          "sm": 6,
+          "md": 3,
+          "min": 100,
+          "max": 5000,
+          "label": {
+            "de": "Abstand der Dimmschritte (ms)",
+            "en": "Interval between dimming steps (ms)"
+          },
+          "help": {
+            "de": "Kleiner = feiner, aber mehr Befehle an die Lampen",
+            "en": "Smaller = smoother, but more commands to the lamps"
+          }
+        },
+        "longPressWaitMs": {
+          "type": "number",
+          "sm": 6,
+          "md": 3,
+          "min": 0,
+          "max": 5000,
+          "label": {
+            "de": "Wartezeit kurz/lang (ms)",
+            "en": "Short/long wait time (ms)"
+          },
+          "help": {
+            "de": "So lange wird nach einem Druck auf einen möglichen Lang-Druck gewartet, bevor kurz = umschalten gilt",
+            "en": "Time to wait for a possible long press before a short press toggles"
+          }
+        },
+        "_discoverBtn": {
+          "type": "sendTo",
+          "command": "discoverDevices",
+          "jsonData": "{\"config\": ${JSON.stringify(data)}}",
+          "useNative": true,
+          "variant": "outlined",
+          "newLine": true,
+          "sm": 12,
+          "md": 6,
+          "label": {
+            "de": "Alle Geräte der Instanzen in die Tabelle einlesen",
+            "en": "Read all devices of the instances into the table"
+          },
+          "tooltip": {
+            "de": "Ergänzt die Tabelle um alle erkannten Schalter und Lampen. Gruppe danach selbst eintragen, Zeilen ohne Gruppe werden ignoriert.",
+            "en": "Adds all detected switches and lamps to the table. Enter the group yourself; rows without a group are ignored."
+          }
+        },
+        "devices": {
+          "type": "table",
+          "newLine": true,
+          "sm": 12,
+          "label": {
+            "de": "Gruppen und Geräte",
+            "en": "Groups and devices"
+          },
+          "items": [
+            {
+              "type": "text",
+              "attr": "group",
+              "title": {
+                "de": "Gruppe (z. B. Wohnzimmer)",
+                "en": "Group (e.g. living_room)"
+              },
+              "width": "30%",
+              "sort": true,
+              "filter": true
+            },
+            {
+              "type": "selectSendTo",
+              "attr": "device",
+              "command": "listDevices",
+              "jsonData": "{}",
+              "manual": true,
+              "title": {
+                "de": "Gerät (Klartext)",
+                "en": "Device (plain text)"
+              },
+              "width": "70%"
+            }
+          ]
+        }
+      }
+    },
+    "names": {
+      "type": "panel",
+      "label": {
+        "de": "Gerätenamen",
+        "en": "Device names"
+      },
+      "items": {
+        "_hint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Optional. govee-smart übernimmt mit Govee-Konto die Namen aus der Govee-App automatisch. Hier kannst du einzelnen Geräten trotzdem einen eigenen Klartext-Namen geben, z. B. wenn ein Name doppelt vorkommt oder ein Gerät keinen sprechenden Namen hat. Die Zuordnung erfolgt über die Datenpunkt-ID.",
+            "en": "Optional. With a Govee account govee-smart takes the names from the Govee app automatically. Here you can still give individual devices your own plain-text name, e.g. if a name occurs twice or a device has no meaningful name. Matching uses the datapoint ID."
+          }
+        },
+        "names": {
+          "type": "table",
+          "newLine": true,
+          "sm": 12,
+          "label": {
+            "de": "Eigene Namen",
+            "en": "Own names"
+          },
+          "items": [
+            {
+              "type": "selectSendTo",
+              "attr": "source",
+              "command": "listSources",
+              "jsonData": "{}",
+              "manual": true,
+              "title": {
+                "de": "Gerät der Quelle (Name · IP)",
+                "en": "Source device (name · IP)"
+              },
+              "width": "60%"
+            },
+            {
+              "type": "text",
+              "attr": "name",
+              "title": {
+                "de": "Klartext-Name (z. B. Wohnzimmer Decke)",
+                "en": "Plain-text name (e.g. living room ceiling)"
+              },
+              "width": "40%"
+            }
+          ]
+        }
+      }
+    },
+    "backup": {
+      "type": "panel",
+      "label": {
+        "de": "Import / Export",
+        "en": "Import / Export"
+      },
+      "items": {
+        "_info": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Die Konfiguration lässt sich als JSON sichern, auf eine andere Instanz übertragen oder wiederherstellen. Die Instanz muss dafür laufen.",
+            "en": "The configuration can be saved as JSON, transferred to another instance or restored. The instance must be running."
+          }
+        },
+        "_exportBtn": {
+          "type": "sendTo",
+          "command": "exportConfig",
+          "jsonData": "{\"config\": ${JSON.stringify(data)}}",
+          "useNative": true,
+          "variant": "outlined",
+          "newLine": true,
+          "sm": 12,
+          "md": 6,
+          "label": {
+            "de": "Konfiguration als JSON exportieren",
+            "en": "Export configuration as JSON"
+          },
+          "tooltip": {
+            "de": "Schreibt die aktuelle Konfiguration (auch ungespeicherte Änderungen) in das Textfeld",
+            "en": "Writes the current configuration (including unsaved changes) into the text field"
+          }
+        },
+        "_importBtn": {
+          "type": "sendTo",
+          "command": "importConfig",
+          "jsonData": "{\"json\": ${JSON.stringify(data.configJson || \"\")}}",
+          "useNative": true,
+          "variant": "contained",
+          "sm": 12,
+          "md": 6,
+          "label": {
+            "de": "JSON aus dem Textfeld importieren",
+            "en": "Import JSON from the text field"
+          },
+          "tooltip": {
+            "de": "Übernimmt die Konfiguration in das Formular; danach Speichern und schließen drücken",
+            "en": "Applies the configuration to the form; then press Save and close"
+          }
+        },
+        "configJson": {
+          "type": "text",
+          "minRows": 12,
+          "maxRows": 28,
+          "copyToClipboard": true,
+          "newLine": true,
+          "sm": 12,
+          "label": {
+            "de": "Konfiguration (JSON): zum Sichern kopieren, zum Import einfügen",
+            "en": "Configuration (JSON): copy to back up, paste to import"
+          }
+        }
+      }
+    }
+  }
+}
