@@ -1,6 +1,6 @@
 {
   "name": "iobroker.licht-gruppen",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Verbindet Schalter und Lampen über Gruppen, Geräte per Klartext-Namen",
   "author": "Lars",
   "license": "MIT",

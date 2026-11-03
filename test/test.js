@@ -211,6 +211,13 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         t.now += 5000;
         assert.strictEqual(await core.handle(L_WZ, ack(false)), 'feedback');
     });
+    await test('Schalter nicht synchron (Lampe an, Schalter aus): Druck schaltet die Lampe aus', async () => {
+        const { core, sets } = setup({ lampFeedback: false });
+        await core.init(SW_WZ, ack(false)); await core.init(L_WZ, ack(true)); await core.afterInit();
+        assert.strictEqual(await core.handle(L_WZ, ack(true)), 'lamp');
+        assert.strictEqual(await core.handle(SW_WZ, ack(true)), 'switched');
+        assert.deepStrictEqual(sets, [[L_WZ, false], [SW_WZ, false]]);
+    });
     await test('Rückmeldung abschaltbar', async () => {
         const { core, sets } = setup({ lampFeedback: false });
         await core.init(SW_WZ, ack(true)); await core.init(L_WZ, ack(true)); await core.afterInit();

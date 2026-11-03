@@ -174,6 +174,10 @@ npm test
 
 ## Changelog
 
+### 1.3.4
+- Fix: Stand der Schalter nicht synchron zu den Lampen (z. B. Lampe per App geschaltet, Rückmeldung noch nicht angekommen), blieb der erste Druck wirkungslos; jetzt schaltet er die Lampen um
+- Log: beim Start eine Zeile je Gruppe mit Schaltern/Tastern und Lampen (mit Datenpunkt), Warnung bei Gruppen ohne Schalter oder ohne Lampe; jede Meldung eines Schalters ohne Wirkung wird mit Begründung protokolliert
+
 ### 1.3.3
 - Raumtyp Korridor (bisher als Flur erkannt, jetzt eigene Gruppe)
 

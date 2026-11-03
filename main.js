@@ -6,6 +6,25 @@ const configio = require('./lib/configio');
 
 const OBJECT_TYPES = ['device', 'channel', 'folder', 'state'];
 
+// Was aus einer Meldung der Quelle wurde (für das Log); ALWAYS = immer als info, sonst nur bei "Schaltvorgänge im Log"
+const RESULT_TEXT = {
+    switched: 'Gruppe geschaltet',
+    unchanged: 'keine Aktion: Gruppe und Lampen stehen schon auf diesem Zustand',
+    mirror: 'keine Aktion: Zustand nur gespiegelt, der Taster-Datenpunkt (PRESS) entscheidet',
+    invalid: 'ungültiger Wert, ignoriert',
+    'no-dimmable': 'keine dimmbare Lampe in der Gruppe',
+    echo: 'Bestätigung eines eigenen Befehls',
+    command: 'Befehl (ack=false), keine Meldung des Geräts – ignoriert',
+    feedback: 'Lampe geschaltet: Gruppe und Schalter nachgeführt',
+    lamp: 'Lampe gemeldet',
+    level: 'Helligkeit gemeldet',
+    'press-wait': 'kurzer Druck, wartet auf möglichen Lang-Druck',
+    'dim-start': 'Dimmen gestartet',
+    'dim-stop': 'Dimmen beendet',
+    release: 'Taste losgelassen',
+};
+const ALWAYS = new Set(['unchanged', 'mirror', 'invalid', 'no-dimmable']);
+
 class LichtGruppen extends utils.Adapter {
     constructor(options) {
         super({ ...options, name: 'licht-gruppen' });
@@ -159,6 +178,11 @@ class LichtGruppen extends utils.Adapter {
         }
         await this.core.afterInit();
         await this.setStateAsync('info.connection', devices.length > 0, true);
+        for (const [group, list] of Object.entries(model.groups)) {
+            const part = (kind) => list.filter((d) => d.kind === kind).map((d) => `${d.label} [${d.onId || d.pressId || d.id}]`).join(', ') || '-';
+            this.log.info(`Gruppe ${group}: Schalter/Taster: ${part('switch')} | Lampen: ${part('lamp')}`);
+            if (!list.some((d) => d.kind === 'switch') || !list.some((d) => d.kind === 'lamp')) this.log.warn(`Gruppe ${group} hat ${list.some((d) => d.kind === 'switch') ? 'keine Lampe' : 'keinen Schalter'} – es passiert nichts`);
+        }
         this.log.info(`Adapter gestartet: ${Object.keys(model.groups).length} Gruppe(n), ${devices.length} Gerät(e), Modus ${cfg.switchMode === 'toggle' ? 'Taster' : 'Schalter'}`);
     }
 
@@ -172,7 +196,15 @@ class LichtGruppen extends utils.Adapter {
             }
             return;
         }
-        this.core.handle(id, state).catch((e) => this.log.error(`Fehler bei ${id}: ${e.message}`));
+        const meta = (this.core.bySource.get(id) || [])[0];
+        this.core.handle(id, state).then(
+            (result) => {
+                if (result === 'ignored') return;
+                const text = `${meta ? `${meta.dev.group}/${meta.dev.label}` : id}: ${id} = ${state.val} (ack=${state.ack}) -> ${RESULT_TEXT[result] || result}`;
+                (ALWAYS.has(result) || this.cfg.logActions ? this.log.info : this.log.debug).call(this.log, text);
+            },
+            (e) => this.log.error(`Fehler bei ${id}: ${e.message}`),
+        );
     }
 
     /** Nachrichten der Admin-Oberfläche: Geräteliste (Dropdown), Geräte einlesen, JSON-Export/-Import. */
