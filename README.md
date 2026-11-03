@@ -40,7 +40,7 @@ Die Geräte werden mit ihrem **Klartext-Namen** eingetragen – so, wie er im Ob
 Beim Einlesen bekommt jedes Gerät eine Gruppe in dieser Reihenfolge:
 
 1. **ioBroker-Räume:** Ist das Gerät, sein Kanal oder sein Datenpunkt Mitglied eines Raums (`enum.rooms.*`, im Admin unter „Aufzählungen“), wird der Raumname verwendet.
-2. **Raumname im Gerätenamen:** Erkannt werden u. a. Wohnzimmer, Esszimmer, Küche, Badezimmer (auch „Bad“), WC, Schlafzimmer, Kinderzimmer, Gästezimmer, Arbeitszimmer (auch „Büro“), Flur (auch „Diele“, „Eingang“), Treppe, Keller, Dachboden, Hauswirtschaftsraum, Vorratsraum, Ankleide, Hobbyraum, Wintergarten, Terrasse, Balkon, Garage, Garten und Außen – auch als Wortanfang (`Flurlicht`, `Badezimmerlampe`).
+2. **Raumname im Gerätenamen:** Erkannt werden u. a. Wohnzimmer, Esszimmer, Küche, Badezimmer (auch „Bad“), WC, Schlafzimmer, Kinderzimmer, Gästezimmer, Arbeitszimmer (auch „Büro“), Flur (auch „Diele“, „Eingang“), Treppe, Keller, Dachboden, Hauswirtschaftsraum, Vorratsraum, Ankleide, Hobbyraum, Jagdzimmer, Wintergarten, Terrasse, Balkon, Garage, Garten und Außen – auch als Wortanfang (`Flurlicht`, `Badezimmerlampe`).
 3. Sonst bleibt die Gruppe leer.
 
 Aus dem Raumnamen wird die Gruppen-ID gebildet: Umlaute werden ausgeschrieben, Leerzeichen werden zu `_` (`Küche` → `Kueche`, `Gäste Bad` → `Gaeste_Bad`). Bereits eingetragene Gruppen bleiben beim erneuten Einlesen unverändert; leere Gruppen bestehender Zeilen werden gefüllt. Die Vorbelegung ist ein Vorschlag – bei einem Doppelschalter, dessen Kanäle in verschiedene Räume gehören, die Gruppe von Hand ändern.
@@ -173,6 +173,9 @@ npm test
 ```
 
 ## Changelog
+
+### 1.3.2
+- Raumtyp Jagdzimmer (auch Jagdstube) wird im Gerätenamen erkannt
 
 ### 1.3.1
 - Korrigiert: Nebenfunktionen von Govee-Lampen (LED-Segmente, Farbverlauf, Musik, Szenen) wurden als eigene Geräte erkannt und mehrfach aufgelistet
