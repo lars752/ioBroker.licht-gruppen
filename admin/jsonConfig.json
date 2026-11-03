@@ -14,42 +14,97 @@
           "newLine": true,
           "sm": 12,
           "text": {
-            "de": "Verbindet Schalter und Lampen über Gruppen (z. B. je Raum). Geräte werden mit ihrem Klartext-Namen aus den Quell-Adaptern eingetragen. Ob ein Gerät Schalter oder Lampe ist, ergibt sich aus der Instanz. Die Instanz muss für Dropdown und Einlesen laufen; nach dem Ändern der Instanzen zuerst speichern.",
-            "en": "Connects switches and lamps via groups (e.g. per room). Devices are entered by their plain-text name from the source adapters. Whether a device is a switch or a lamp follows from its instance. The instance must be running for the dropdown and the scan; after changing the instances, save first."
+            "de": "Verbindet Schalter und Lampen über Gruppen (z. B. je Raum). Wähle unten die Instanzen, aus denen Schalter und Lampen kommen, und lies die Geräte ein: Die Gruppen werden aus den ioBroker-Räumen bzw. aus Raumnamen in den Gerätenamen (Küche, Flur, Badezimmer ...) vorbelegt. Zeilen ohne Gruppe werden ignoriert. Die Instanz muss für Auswahlliste und Einlesen laufen; nach dem Ändern der Instanzen zuerst speichern.",
+            "en": "Connects switches and lamps via groups (e.g. per room). Choose below the instances that provide switches and lamps, then read in the devices: groups are pre-filled from ioBroker rooms or room names in the device names (kitchen, hallway, bathroom ...). Rows without a group are ignored. The instance must be running for the selection list and the scan; after changing the instances, save first."
+          }
+        },
+        "_instHeader": {
+          "type": "header",
+          "size": 5,
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Instanzen",
+            "en": "Instances"
           }
         },
         "switchAdapters": {
-          "type": "text",
-          "newLine": true,
+          "type": "selectSendTo",
+          "command": "listInstances",
+          "jsonData": "{}",
+          "multiple": true,
+          "noTranslation": true,
           "sm": 12,
           "md": 6,
           "label": {
-            "de": "Schalter-Instanzen (Komma-getrennt)",
-            "en": "Switch instances (comma separated)"
+            "de": "Schalter-Instanzen (Quelle der Schalter und Taster)",
+            "en": "Switch instances (source of switches and buttons)"
           },
           "help": {
-            "de": "z. B. matter.0",
-            "en": "e.g. matter.0"
-          }
+            "de": "Mehrfachauswahl, z. B. matter.0",
+            "en": "Multiple selection, e.g. matter.0"
+          },
+          "newLine": true
         },
         "lampAdapters": {
-          "type": "text",
+          "type": "selectSendTo",
+          "command": "listInstances",
+          "jsonData": "{}",
+          "multiple": true,
+          "noTranslation": true,
           "sm": 12,
           "md": 6,
           "label": {
-            "de": "Lampen-Instanzen (Komma-getrennt)",
-            "en": "Lamp instances (comma separated)"
+            "de": "Lampen-Instanzen (Quelle der Lampen)",
+            "en": "Lamp instances (source of the lamps)"
           },
           "help": {
-            "de": "z. B. govee-smart.0 - so, wie die Instanz im Objektbaum heißt",
-            "en": "e.g. govee-smart.0 - as the instance is named in the object tree"
+            "de": "Mehrfachauswahl, z. B. govee-smart.0",
+            "en": "Multiple selection, e.g. govee-smart.0"
+          }
+        },
+        "_behHeader": {
+          "type": "header",
+          "size": 5,
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Verhalten",
+            "en": "Behaviour"
+          }
+        },
+        "_beh1": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Schalter (Wippe, Relais): Die Stellung des Schalters bestimmt die Gruppe. Schalter an = alle Lampen der Gruppe an, Schalter aus = alle Lampen aus. Hat eine Gruppe mehrere Schalter (Wechselschaltung), werden die übrigen Schalter auf denselben Zustand nachgeführt.",
+            "en": "Switch (rocker, relay): the position of the switch decides the group. Switch on = all lamps of the group on, switch off = all lamps off. If a group has several switches, the other switches are set to the same state."
+          }
+        },
+        "_beh2": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Taster: Jede Betätigung schaltet die Gruppe um (aus wird an, an wird aus). Die Schalter werden dabei nicht nachgeführt. Taster, die kurz und lang unterscheiden (Matter Generic Switch, Datenpunkte PRESS und PRESS_LONG): kurz drücken schaltet um, lang drücken dimmt (siehe Lang-Druck).",
+            "en": "Push button: every press toggles the group (off becomes on, on becomes off). The switches are not updated. Buttons that distinguish short and long (Matter Generic Switch, datapoints PRESS and PRESS_LONG): a short press toggles, a long press dims (see long press)."
+          }
+        },
+        "_beh3": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Lampen: Die Lampen einer Gruppe werden immer gemeinsam geschaltet. Wird eine Lampe von außen geschaltet (z. B. in der Govee-App), kann die Gruppe das übernehmen (Rückmeldung).",
+            "en": "Lamps: the lamps of a group are always switched together. If a lamp is switched from outside (e.g. in the Govee app), the group can take that over (feedback)."
           }
         },
         "switchMode": {
           "type": "select",
           "newLine": true,
           "sm": 12,
-          "md": 4,
+          "md": 6,
           "label": {
             "de": "Verhalten der Schalter",
             "en": "Switch behaviour"
@@ -58,26 +113,34 @@
             {
               "value": "state",
               "label": {
-                "de": "Schalter: Zustand an = Gruppe an",
-                "en": "Switch: state on = group on"
+                "de": "Schalter: Stellung bestimmt die Gruppe (an = Lampen an, aus = Lampen aus)",
+                "en": "Switch: position decides the group (on = lamps on, off = lamps off)"
               }
             },
             {
               "value": "toggle",
               "label": {
-                "de": "Taster: jede Änderung schaltet um",
-                "en": "Push button: every change toggles"
+                "de": "Taster: jede Betätigung schaltet die Gruppe um",
+                "en": "Push button: every press toggles the group"
               }
             }
-          ]
+          ],
+          "help": {
+            "de": "Schalter: der Schalter behält seine Stellung und bestimmt die Gruppe. Taster: jede Betätigung schaltet um, egal in welcher Stellung der Schalter steht.",
+            "en": "Switch: the switch keeps its position and decides the group. Push button: every press toggles, regardless of the position of the switch."
+          }
         },
         "lampFeedback": {
           "type": "checkbox",
           "sm": 12,
-          "md": 4,
+          "md": 6,
           "label": {
-            "de": "Rückmeldung: Schalter folgen den Lampen (mind. eine an = an)",
-            "en": "Feedback: switches follow the lamps (at least one on = on)"
+            "de": "Rückmeldung: Schalter folgen den Lampen",
+            "en": "Feedback: switches follow the lamps"
+          },
+          "help": {
+            "de": "Wird eine Lampe außerhalb von ioBroker geschaltet (z. B. in der Govee-App), übernimmt die Gruppe den neuen Zustand: Ist mindestens eine Lampe der Gruppe eingeschaltet, gilt die Gruppe als an und die Schalter werden auf an gestellt. Sind alle Lampen aus, gilt die Gruppe als aus und die Schalter werden auf aus gestellt. Im Modus Taster wird nur der Gruppenzustand aktualisiert.",
+            "en": "If a lamp is switched outside ioBroker (e.g. in the Govee app), the group takes over the new state: if at least one lamp of the group is on, the group counts as on and the switches are set to on. If all lamps are off, the group counts as off and the switches are set to off. In push button mode only the group state is updated."
           }
         },
         "lockMs": {
@@ -91,9 +154,10 @@
             "en": "Lock time after command (ms)"
           },
           "help": {
-            "de": "In dieser Zeit werden Lampen-Rückmeldungen nicht ausgewertet",
-            "en": "Lamp feedback is ignored during this time"
-          }
+            "de": "Nach einem Schaltbefehl werden Meldungen der Lampen so lange ignoriert, damit die Gruppe nicht flackert, während die Lampen nacheinander antworten.",
+            "en": "After a switching command, lamp reports are ignored for this time so the group does not flicker while the lamps answer one after another."
+          },
+          "newLine": true
         },
         "syncOnStart": {
           "type": "checkbox",
@@ -101,8 +165,12 @@
           "sm": 12,
           "md": 4,
           "label": {
-            "de": "Beim Start Schalter an Lampen angleichen",
-            "en": "Align switches with lamps on start"
+            "de": "Beim Start Schalter an den Zustand der Lampen angleichen",
+            "en": "Align switches with the lamps on start"
+          },
+          "help": {
+            "de": "Nur im Modus Schalter: Stehen Schalter nach einem Neustart anders als die Lampen, werden sie angeglichen. Die Lampen werden dabei nicht geschaltet.",
+            "en": "Switch mode only: if switches differ from the lamps after a restart they are aligned. The lamps are not switched."
           }
         },
         "pruneOnStart": {
@@ -112,6 +180,10 @@
           "label": {
             "de": "Beim Start nicht mehr konfigurierte Datenpunkte löschen",
             "en": "Delete data points that are no longer configured on start"
+          },
+          "help": {
+            "de": "Entfernt Datenpunkte von Gruppen und Geräten, die nicht mehr in der Tabelle stehen. Betrifft nur diesen Adapter.",
+            "en": "Removes datapoints of groups and devices that are no longer in the table. Only affects this adapter."
           }
         },
         "logActions": {
@@ -121,6 +193,10 @@
           "label": {
             "de": "Schaltvorgänge im Log (Stufe info) ausgeben",
             "en": "Log switching actions (level info)"
+          },
+          "help": {
+            "de": "Zeigt jeden Schaltvorgang im Log (sonst nur bei Loglevel debug).",
+            "en": "Shows every switching action in the log (otherwise only at log level debug)."
           }
         },
         "_dimHeader": {
@@ -195,6 +271,25 @@
             "en": "Time to wait for a possible long press before a short press toggles"
           }
         },
+        "_devHeader": {
+          "type": "header",
+          "size": 5,
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Gruppen und Geräte",
+            "en": "Groups and devices"
+          }
+        },
+        "_devHint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "de": "Geräte mit derselben Gruppe gehören zusammen: Alle Schalter einer Gruppe schalten alle Lampen dieser Gruppe. Ein Gerät kann in mehreren Gruppen stehen.",
+            "en": "Devices with the same group belong together: all switches of a group switch all lamps of that group. A device can be in several groups."
+          }
+        },
         "_discoverBtn": {
           "type": "sendTo",
           "command": "discoverDevices",
@@ -205,12 +300,12 @@
           "sm": 12,
           "md": 6,
           "label": {
-            "de": "Alle Geräte der Instanzen in die Tabelle einlesen",
-            "en": "Read all devices of the instances into the table"
+            "de": "Geräte einlesen und Gruppen vorbelegen",
+            "en": "Read devices and pre-fill groups"
           },
           "tooltip": {
-            "de": "Ergänzt die Tabelle um alle erkannten Schalter und Lampen. Gruppe danach selbst eintragen, Zeilen ohne Gruppe werden ignoriert.",
-            "en": "Adds all detected switches and lamps to the table. Enter the group yourself; rows without a group are ignored."
+            "de": "Ergänzt die Tabelle um alle erkannten Schalter und Lampen. Die Gruppe wird aus dem Raum vorbelegt (ioBroker-Räume, sonst Raumname im Gerätenamen); bereits eingetragene Gruppen bleiben unverändert. Zeilen ohne Gruppe werden ignoriert.",
+            "en": "Adds all detected switches and lamps to the table. The group is pre-filled from the room (ioBroker rooms, otherwise room name in the device name); groups already entered stay unchanged. Rows without a group are ignored."
           }
         },
         "devices": {
@@ -218,8 +313,8 @@
           "newLine": true,
           "sm": 12,
           "label": {
-            "de": "Gruppen und Geräte",
-            "en": "Groups and devices"
+            "de": "Zuordnung",
+            "en": "Assignment"
           },
           "items": [
             {

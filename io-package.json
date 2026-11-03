@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "licht-gruppen",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "news": {
+            "1.3.0": {
+                "en": "Switch and lamp instances are picked from a list of installed instances; groups are pre-filled from ioBroker rooms or room names in device names (Kitchen, Hallway, ...); behaviour of switches and feedback described in the settings",
+                "de": "Schalter- und Lampen-Instanzen werden aus einer Liste der installierten Instanzen gewählt; Gruppen werden aus ioBroker-Räumen oder Raumnamen in Gerätenamen (Küche, Flur, ...) vorbelegt; Verhalten der Schalter und Rückmeldung in den Einstellungen beschrieben"
+            },
             "1.2.0": {
                 "en": "Long press dims: lamps start at 1 % (or the current brightness) and get brighter until the switch is released; works with switches that report a hold signal (Matter Generic Switch PRESS_LONG). Group and lamp brightness datapoints. govee-smart may use its Cloud again; LAN-only check removed",
                 "de": "Lang-Druck dimmt: Lampen starten bei 1 % (bzw. aktueller Helligkeit) und werden heller, bis der Schalter losgelassen wird; für Schalter mit Halte-Signal (Matter Generic Switch PRESS_LONG). Helligkeits-Datenpunkte je Gruppe und Lampe. govee-smart darf wieder die Cloud nutzen, LAN-Prüfung entfernt"
@@ -67,8 +71,12 @@
         ]
     },
     "native": {
-        "switchAdapters": "matter.0",
-        "lampAdapters": "govee-smart.0",
+        "switchAdapters": [
+            "matter.0"
+        ],
+        "lampAdapters": [
+            "govee-smart.0"
+        ],
         "switchMode": "state",
         "lampFeedback": true,
         "syncOnStart": false,

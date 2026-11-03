@@ -1,6 +1,6 @@
 'use strict';
 const utils = require('@iobroker/adapter-core');
-const { normalizeConfig, catalog, resolveRows, buildModel, mergeDevices } = require('./lib/model');
+const { normalizeConfig, catalog, resolveRows, buildModel, mergeDevices, assignRooms, nameOf } = require('./lib/model');
 const { LightCore } = require('./lib/core');
 const configio = require('./lib/configio');
 
@@ -44,6 +44,28 @@ class LichtGruppen extends utils.Adapter {
             if (!Object.keys(objs[inst]).length) this.log.warn(`Instanz ${inst} hat keine Objekte – Instanzname prüfen`);
         }
         return catalog(cfg, objs);
+    }
+
+    /** Alle installierten Instanzen als Auswahlliste (ohne diesen Adapter und reine Infrastruktur). */
+    async listInstances() {
+        const view = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
+        const skip = new Set([this.name, 'admin', 'discovery']);
+        const out = [];
+        for (const row of (view && view.rows) || []) {
+            const id = String(row.id || '').replace(/^system\.adapter\./, '');
+            const adapter = id.replace(/\.\d+$/, '');
+            const common = (row.value && row.value.common) || {};
+            if (!/\.\d+$/.test(id) || skip.has(adapter) || ['storage', 'visualization'].includes(common.type)) continue;
+            const title = nameOf({ common: { name: common.titleLang || common.title || '' } }, '');
+            out.push({ value: id, label: title && title.toLowerCase() !== adapter ? `${id} (${title})` : id });
+        }
+        return out.sort((a, b) => a.value.localeCompare(b.value, 'de', { numeric: true }));
+    }
+
+    /** ioBroker-Räume (enum.rooms.*) mit ihren Mitgliedern. */
+    async loadRooms() {
+        const objs = (await this.getForeignObjectsAsync('enum.rooms.*', 'enum')) || {};
+        return Object.values(objs).map((o) => ({ name: nameOf(o, String(o._id || '').split('.').pop()), members: (o.common && o.common.members) || [] }));
     }
 
     /** Ergänzt Lampen um die IP-Adresse (govee-smart: <gerät>.info.ip), nur zur Anzeige im Dropdown. */
@@ -94,6 +116,10 @@ class LichtGruppen extends utils.Adapter {
             for (const e of errors) this.log.error(e);
             this.log.error('Konfiguration fehlerhaft – Adapter bleibt inaktiv. Bitte in der Instanz korrigieren');
             return;
+        }
+        if (!cfg.switchAdapters.length || !cfg.lampAdapters.length) this.log.warn('Es ist keine Schalter- bzw. keine Lampen-Instanz ausgewählt – bitte in den Einstellungen wählen');
+        for (const inst of [...cfg.switchAdapters, ...cfg.lampAdapters]) {
+            if (!(await this.getForeignObjectAsync(`system.adapter.${inst}`))) this.log.warn(`Instanz ${inst} existiert nicht – bitte in den Einstellungen eine vorhandene Instanz wählen`);
         }
         if (!cfg.rows.length) this.log.warn('Keine Zuordnungen konfiguriert – bitte die Tabelle in der Instanz ausfüllen');
 
@@ -157,6 +183,7 @@ class LichtGruppen extends utils.Adapter {
             const msg = obj.message || {};
             if (obj.command === 'exportConfig') reply = configio.exportConfig(msg.config);
             else if (obj.command === 'importConfig') reply = configio.importConfig(msg.json);
+            else if (obj.command === 'listInstances') reply = await this.listInstances();
             else if (obj.command === 'listSources') {
                 const { cfg, errors } = normalizeConfig(msg.config || this.config);
                 const entries = errors.length ? [] : await this.withIp(await this.scan(cfg));
@@ -173,12 +200,14 @@ class LichtGruppen extends utils.Adapter {
                     if (obj.command === 'listDevices') {
                         reply = entries.map((e) => ({ value: e.label, label: `${e.kind === 'switch' ? 'Schalter' : 'Lampe'}: ${e.label}` }));
                     } else {
-                        const { rows, added } = mergeDevices(c.devices, entries);
+                        assignRooms(entries, await this.loadRooms());
+                        const { rows, added, filled, open, rooms } = mergeDevices(c.devices, entries);
+                        const byEnum = entries.filter((e) => e.roomSource === 'enum').length;
                         reply = {
                             native: { devices: rows },
                             result: entries.length
-                                ? `${entries.length} Gerät(e) gefunden, ${added.length} neu in die Tabelle übernommen. Bei neuen Zeilen die Gruppe eintragen (Zeilen ohne Gruppe werden ignoriert), danach "Speichern und schließen" drücken.`
-                                : `In ${[...cfg.switchAdapters, ...cfg.lampAdapters].join(', ')} wurden keine schaltbaren Geräte gefunden.`,
+                                ? `${entries.length} Gerät(e) gefunden, ${added.length} neu in die Tabelle übernommen. Gruppe aus dem Raum vorbelegt bei ${filled.length} Gerät(en) (${byEnum} aus ioBroker-Räumen, ${entries.filter((e) => e.roomSource === 'name').length} aus dem Gerätenamen)${rooms.length ? `: ${rooms.join(', ')}` : ''}. ${open ? `${open} Zeile(n) ohne Gruppe: bitte eintragen, sonst werden sie ignoriert. ` : ''}Danach "Speichern und schließen" drücken.`
+                                : `In ${[...cfg.switchAdapters, ...cfg.lampAdapters].join(', ') || 'den gewählten Instanzen'} wurden keine schaltbaren Geräte gefunden.`,
                         };
                     }
                 }

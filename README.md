@@ -5,12 +5,12 @@ Die Geräte werden mit ihrem **Klartext-Namen** eingetragen – so, wie er im Ob
 
 ## Funktionen
 
+- **Instanzen per Auswahlliste:** Schalter- und Lampen-Instanzen werden aus den installierten Instanzen gewählt (Mehrfachauswahl), nichts muss getippt werden.
+- **Gruppen vorbelegt aus Räumen:** Beim Einlesen der Geräte wird die Gruppe aus den ioBroker-Räumen (`enum.rooms.*`) oder aus einem Raumnamen im Gerätenamen (Küche, Flur, Badezimmer, Esszimmer …) eingetragen.
 - **Gruppen frei konfigurierbar:** Tabelle mit *Gruppe* und *Gerät (Klartext)*. Das Gerät wird aus einem Dropdown gewählt (oder von Hand eingetragen). Ob es Schalter oder Lampe ist, ergibt sich aus der Instanz.
 - **Beliebig viele Schalter und Lampen je Gruppe**, ein Gerät darf auch in mehreren Gruppen stehen.
 - **Doppelschalter:** Jeder Kanal erscheint als eigenes Gerät, z. B. `Flur Doppelschalter – Kanal 1` und `… – Kanal 2`, und kann einer anderen Gruppe zugeordnet werden.
-- **Schalter-Modus:** Zustand des Schalters = Zustand der Gruppe; weitere Schalter der Gruppe werden nachgeführt.
-- **Taster-Modus:** Jede Zustandsänderung des Schalters schaltet die Gruppe um.
-- **Rückmeldung (abschaltbar):** Wird eine Lampe z. B. über die Govee-App geschaltet, folgen die Schalter („mindestens eine Lampe an“ = an). Eine Sperrzeit nach eigenen Befehlen verhindert Flackern.
+- **Schalter-Modus oder Taster-Modus**, dazu optional **Rückmeldung** der Lampen an die Schalter – Beschreibung im Abschnitt „Verhalten von Schalter, Taster und Lampen“.
 - **Echo-Erkennung:** Bestätigungen der Geräte auf eigene Befehle lösen keine Kettenreaktion aus.
 - **Lang-Druck dimmt:** ausgeschaltete Lampen starten bei 1 %, eingeschaltete bei ihrer aktuellen Helligkeit, und werden heller, bis der Schalter losgelassen wird (für Schalter mit Halte-Signal, siehe unten).
 - **Helligkeit** je Gruppe und Lampe als schreibbarer Datenpunkt.
@@ -29,11 +29,40 @@ Die Geräte werden mit ihrem **Klartext-Namen** eingetragen – so, wie er im Ob
 
 ## Einrichtung
 
-1. **Schalter-Instanzen** (`matter.0`) und **Lampen-Instanzen** (`govee-smart.0`) eintragen, **speichern**. Die Instanz startet.
-2. Optional, Reiter **Gerätenamen**: einzelnen Geräten einen eigenen Klartext-Namen geben. Normalerweise nicht nötig, die Namen kommen aus der Govee-App bzw. aus matter.0.
-3. Instanz-Einstellungen erneut öffnen. Entweder **„Alle Geräte der Instanzen in die Tabelle einlesen“** (alle erkannten Geräte landen ohne Gruppe in der Tabelle) oder Zeilen von Hand anlegen und das Gerät im Dropdown wählen.
-4. Je Zeile die **Gruppe** eintragen (z. B. `Wohnzimmer`; erlaubt: A–Z, 0–9, `_`, `-`). Zeilen ohne Gruppe werden ignoriert.
+1. **Schalter-Instanzen** (z. B. `matter.0`) und **Lampen-Instanzen** (z. B. `govee-smart.0`) aus der Auswahlliste wählen und **speichern**. Die Instanz startet; die Liste und das Einlesen funktionieren nur bei laufender Instanz.
+2. Einstellungen erneut öffnen und **„Geräte einlesen und Gruppen vorbelegen“** drücken. Alle erkannten Schalter und Lampen landen in der Tabelle, die **Gruppe** ist aus dem Raum vorbelegt (siehe unten).
+3. Tabelle prüfen: Gruppen ändern, Zeilen ohne Gruppe ausfüllen (sonst werden sie ignoriert), nicht benötigte Geräte löschen. Zeilen lassen sich auch von Hand anlegen, das Gerät wird im Dropdown gewählt. Erlaubt sind in Gruppennamen A–Z, 0–9, `_`, `-`.
+4. Optional, Reiter **Gerätenamen**: einzelnen Geräten einen eigenen Klartext-Namen geben. Normalerweise nicht nötig, die Namen kommen aus der Govee-App bzw. aus matter.0.
 5. Speichern. Im Log (Stufe debug) steht für jedes erkannte Gerät, welcher Datenpunkt verwendet wird.
+
+### Gruppen aus Räumen vorbelegen
+
+Beim Einlesen bekommt jedes Gerät eine Gruppe in dieser Reihenfolge:
+
+1. **ioBroker-Räume:** Ist das Gerät, sein Kanal oder sein Datenpunkt Mitglied eines Raums (`enum.rooms.*`, im Admin unter „Aufzählungen“), wird der Raumname verwendet.
+2. **Raumname im Gerätenamen:** Erkannt werden u. a. Wohnzimmer, Esszimmer, Küche, Badezimmer (auch „Bad“), WC, Schlafzimmer, Kinderzimmer, Gästezimmer, Arbeitszimmer (auch „Büro“), Flur (auch „Diele“, „Eingang“), Treppe, Keller, Dachboden, Hauswirtschaftsraum, Vorratsraum, Ankleide, Hobbyraum, Wintergarten, Terrasse, Balkon, Garage, Garten und Außen – auch als Wortanfang (`Flurlicht`, `Badezimmerlampe`).
+3. Sonst bleibt die Gruppe leer.
+
+Aus dem Raumnamen wird die Gruppen-ID gebildet: Umlaute werden ausgeschrieben, Leerzeichen werden zu `_` (`Küche` → `Kueche`, `Gäste Bad` → `Gaeste_Bad`). Bereits eingetragene Gruppen bleiben beim erneuten Einlesen unverändert; leere Gruppen bestehender Zeilen werden gefüllt. Die Vorbelegung ist ein Vorschlag – bei einem Doppelschalter, dessen Kanäle in verschiedene Räume gehören, die Gruppe von Hand ändern.
+
+## Verhalten von Schalter, Taster und Lampen
+
+**Schalter (Modus „Schalter“, Standard):** Die Stellung des Schalters bestimmt die Gruppe. Schalter an → alle Lampen der Gruppe an, Schalter aus → alle Lampen aus. Hat die Gruppe mehrere Schalter (Wechselschaltung), werden die übrigen Schalter auf denselben Zustand gestellt, damit alle gleich stehen. Geändert wird nur, wenn sich etwas ändert: Steht die Gruppe schon auf dem gewünschten Zustand, passiert nichts.
+
+**Taster (Modus „Taster“):** Jede Betätigung (jeder Zustandswechsel des Geräts) schaltet die Gruppe um: aus → an, an → aus. Andere Schalter der Gruppe werden nicht nachgeführt, weil ihre Stellung dann keine Bedeutung hat. Dieser Modus passt auch für Wandschalter, die bei jedem Druck umschalten sollen, egal in welcher Stellung sie stehen. Beispiel: Die Lampen wurden per App eingeschaltet und die Rückmeldung ist aus; der Schalter steht noch auf aus. Im Modus „Schalter“ schaltet der nächste Druck den Schalter auf an, die Gruppe steht für den Adapter aber schon auf an – der erste Druck bleibt wirkungslos. Im Modus „Taster“ schaltet er die Gruppe aus.
+
+**Taster mit kurz und lang** (Matter Generic Switch, Datenpunkte `PRESS` und `PRESS_LONG`, unabhängig vom Modus): kurz drücken schaltet die Gruppe um, lang drücken dimmt (siehe unten).
+
+**Rückmeldung der Lampen** (Einstellung „Rückmeldung: Schalter folgen den Lampen“, Standard an): Wird eine Lampe außerhalb von ioBroker geschaltet, z. B. in der Govee-App, übernimmt die Gruppe den neuen Zustand:
+
+| Zustand der Lampen | Gruppe gilt als | Schalter (Modus „Schalter“) |
+|---|---|---|
+| mindestens eine Lampe an | an | werden auf an gestellt |
+| alle Lampen aus | aus | werden auf aus gestellt |
+
+Im Modus „Taster“ wird nur der Gruppenzustand (`<gruppe>.on`) aktualisiert, die Schalter bleiben unberührt. Nach einem eigenen Schaltbefehl werden Meldungen der Lampen für die **Sperrzeit** (Standard 3 s) ignoriert, damit die Gruppe nicht flackert, während die Lampen nacheinander antworten. Bei ausgeschalteter Rückmeldung ändert eine von außen geschaltete Lampe weder Gruppe noch Schalter.
+
+**Lampen** einer Gruppe werden immer gemeinsam geschaltet. Einzelne Lampen lassen sich über `<gruppe>.Lampe<n>.on` getrennt schalten.
 
 Beispiel:
 
@@ -77,9 +106,9 @@ Damit die Govee-Lampen dauerhaft Strom haben, darf das Relais des M5 die Lampen 
 
 | Einstellung | Standard | Bedeutung |
 |---|---|---|
-| Schalter-Instanzen | `matter.0` | kommagetrennt |
-| Lampen-Instanzen | `govee-smart.0` | kommagetrennt |
-| Verhalten der Schalter | Schalter | Schalter (Zustand) oder Taster (jede Änderung schaltet um) |
+| Schalter-Instanzen | `matter.0` | Auswahlliste (Mehrfachauswahl) der installierten Instanzen |
+| Lampen-Instanzen | `govee-smart.0` | Auswahlliste (Mehrfachauswahl) der installierten Instanzen |
+| Verhalten der Schalter | Schalter | Schalter (Stellung bestimmt die Gruppe) oder Taster (jede Betätigung schaltet um) |
 | Rückmeldung | an | Schalter folgen den Lampen |
 | Sperrzeit | 3000 ms | Lampen-Rückmeldungen werden nach eigenem Befehl so lange ignoriert |
 | Beim Start angleichen | aus | Schalter beim Start auf den Lampenzustand setzen |
@@ -117,8 +146,8 @@ Reiter **„Import / Export“**: Export schreibt die Konfiguration als JSON in 
   "adapter": "licht-gruppen",
   "version": 1,
   "config": {
-    "switchAdapters": "matter.0",
-    "lampAdapters": "govee-smart.0",
+    "switchAdapters": ["matter.0"],
+    "lampAdapters": ["govee-smart.0"],
     "switchMode": "state",
     "lampFeedback": true,
     "syncOnStart": false,
@@ -144,6 +173,12 @@ npm test
 ```
 
 ## Changelog
+
+### 1.3.0
+- Schalter- und Lampen-Instanzen per Auswahlliste der installierten Instanzen (Mehrfachauswahl); kommagetrennter Text aus älteren Exporten wird weiter gelesen
+- Einlesen belegt die Gruppe aus ioBroker-Räumen bzw. Raumnamen im Gerätenamen vor
+- Beschreibung des Verhaltens von Schalter, Taster, Rückmeldung und Sperrzeit in den Einstellungen und im README
+- Hinweise im Log, wenn eine gewählte Instanz nicht existiert
 
 ### 1.2.0
 - Lang-Druck dimmt (Start bei 1 % bzw. aktueller Helligkeit, Loslassen hält den Wert) für Schalter mit Halte-Signal (Matter Generic Switch `PRESS_LONG`)

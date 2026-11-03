@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const { normalizeConfig, discover, catalog, resolveRows, buildModel, mergeDevices } = require('../lib/model');
+const { normalizeConfig, discover, catalog, resolveRows, buildModel, mergeDevices, roomFromName, groupId, assignRooms } = require('../lib/model');
 const { LightCore } = require('../lib/core');
 const { exportConfig, importConfig } = require('../lib/configio');
 
@@ -375,6 +375,51 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         await x.core.afterInit();
         assert.strictEqual(await x.core.handle(LONG, ack(true)), 'no-dimmable');
     });
+    await test('Instanzen: Liste aus der Auswahl oder kommagetrennter Text, leer erlaubt, Fehler bei ungültigem Namen', () => {
+        const a = normalizeConfig({ switchAdapters: ['matter.0', 'matter.1'], lampAdapters: ['govee-smart.0'] }, silent);
+        assert.deepStrictEqual(a.errors, []);
+        assert.deepStrictEqual(a.cfg.switchAdapters, ['matter.0', 'matter.1']);
+        const b = normalizeConfig({ switchAdapters: 'matter.0, matter.1', lampAdapters: '' }, silent);
+        assert.deepStrictEqual(b.errors, []);
+        assert.deepStrictEqual(b.cfg.switchAdapters, ['matter.0', 'matter.1']);
+        assert.deepStrictEqual(b.cfg.lampAdapters, []);
+        assert.strictEqual(normalizeConfig({ switchAdapters: ['matter'] }, silent).errors.length, 1);
+        assert.strictEqual(normalizeConfig({ switchAdapters: ['a.0'], lampAdapters: ['a.0'] }, silent).errors.length, 1);
+    });
+    await test('Räume: Erkennung im Gerätenamen und Gruppen-ID', () => {
+        const cases = { 'Flur Decke': 'Flur', 'Badezimmerlicht': 'Badezimmer', 'Bad Taster': 'Badezimmer', 'Küche Schalter': 'Kueche', Esszimmer: 'Esszimmer',
+            'Flurlicht': 'Flur', 'Treppenhaus oben': 'Treppe', 'Gäste-WC Spiegel': 'WC', 'H60A4_1a2b': '', Kindergarten: '', 'Sonoff M5': '' };
+        for (const [name, room] of Object.entries(cases)) assert.strictEqual(roomFromName(name), room, name);
+        assert.strictEqual(groupId('Küche & Esszimmer'), 'Kueche_Esszimmer');
+        assert.strictEqual(groupId('Info'), '');
+        assert.strictEqual(groupId('Wohn Zimmer'), 'Wohn_Zimmer');
+    });
+    await test('Räume: ioBroker-Räume haben Vorrang vor dem Namen, Mitglied darf auch Gerät oder Kanal sein', () => {
+        const { entries } = setup();
+        assignRooms(entries, [
+            { name: { de: 'Arbeitszimmer', en: 'Office' }.de, members: ['matter.0.controller.111'] },       // Gerät des Wohnzimmer-Schalters
+            { name: 'Gäste Bad', members: [L_K] },                                                                  // Datenpunkt der Küchen-Lampe
+        ]);
+        const by = (label) => entries.find((e) => e.label === label);
+        assert.deepStrictEqual([by('Wohnzimmer Schalter').room, by('Wohnzimmer Schalter').roomSource], ['Arbeitszimmer', 'enum']);
+        assert.deepStrictEqual([by('Küche Decke').room, by('Küche Decke').roomSource], ['Gaeste_Bad', 'enum']);
+        assert.deepStrictEqual([by('Flur Decke').room, by('Flur Decke').roomSource], ['Flur', 'name']);
+        assert.deepStrictEqual([by('Bad Taster').room, by('Bad Taster').roomSource], ['Badezimmer', 'name']);
+        assert.strictEqual(by('Flur Doppelschalter – Kanal 2').room, 'Flur');
+    });
+    await test('Einlesen: Gruppen vorbelegt, vorhandene Gruppen bleiben, leere Zeilen werden gefüllt', () => {
+        const { entries } = setup();
+        assignRooms(entries, []);
+        const r = mergeDevices([{ group: 'Meine', device: 'Küche Schalter' }, { group: '', device: 'Flur Decke' }], entries);
+        const g = (d) => r.rows.find((x) => x.device === d).group;
+        assert.strictEqual(g('Küche Schalter'), 'Meine');
+        assert.strictEqual(g('Flur Decke'), 'Flur');
+        assert.strictEqual(g('Bad Taster'), 'Badezimmer');
+        assert.strictEqual(g('Wohnzimmer Decke'), 'Wohnzimmer');
+        assert.ok(r.rooms.includes('Flur') && r.rooms.includes('Badezimmer') && !r.rooms.includes(''));
+        assert.ok(r.open === r.rows.filter((x) => !x.group).length);
+        assert.ok(r.filled.includes('Flur Decke') && !r.filled.includes('Küche Schalter'));
+    });
     await test('Export / Import', () => {
         const ex = exportConfig({ devices: ROWS, names: NAMES, switchMode: 'toggle', lampAdapters: 'govee.0' });
         const imp = importConfig(ex.native.configJson);
@@ -382,7 +427,7 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         assert.deepStrictEqual(imp.native.names, NAMES);
         assert.ok(importConfig('{"names": {}}').error);
         assert.strictEqual(imp.native.switchMode, 'toggle');
-        assert.strictEqual(imp.native.lampAdapters, 'govee.0');
+        assert.deepStrictEqual(imp.native.lampAdapters, ['govee.0']);
         assert.ok(importConfig('{"adapter":"ecoflow-gruppen"}').error);
         assert.ok(importConfig('nope').error);
         assert.ok(importConfig('').error);
