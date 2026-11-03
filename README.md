@@ -77,7 +77,7 @@ Beispiel:
 
 ### Wie werden Geräte erkannt?
 
-In jeder Instanz werden beschreibbare boolesche Datenpunkte gesucht, deren Rolle mit `switch` beginnt oder deren Name `on`, `onOff`, `power`, `state`, `switch` o. Ä. lautet. Je Ordner wird der beste Treffer genommen (`switch.light` vor `switch.power` vor `switch`). Der Klartext ist der Name des übergeordneten Geräts (`common.name`), bei mehreren Treffern je Gerät ergänzt um den Kanalnamen. Gleiche Namen in verschiedenen Instanzen werden um die Instanz ergänzt.
+In jeder Instanz werden beschreibbare boolesche Datenpunkte gesucht, deren Rolle mit `switch` beginnt oder deren Name `on`, `onOff`, `power`, `state`, `switch` o. Ä. lautet. Je Ordner wird der beste Treffer genommen (`switch.light` vor `switch.power` vor `switch`). Nebenfunktionen wie LED-Segmente, Farbverlauf, Musik oder Szenen (Pfad bzw. Name enthält `segments`, `gradient`, `music`, `scenes`, `…_toggle`, `…_mode`) zählen nicht als Gerät. Der Klartext ist der Name des übergeordneten Geräts (`common.name`), bei mehreren Treffern je Gerät ergänzt um den Kanalnamen. Gleiche Namen in verschiedenen Instanzen werden um die Instanz ergänzt.
 
 **Umbenennen:** Wird ein Gerät im Quell-Adapter umbenannt, passt der Eintrag nicht mehr. Der Adapter meldet das im Log und im Datenpunkt `info.missing`.
 
@@ -173,6 +173,9 @@ npm test
 ```
 
 ## Changelog
+
+### 1.3.1
+- Korrigiert: Nebenfunktionen von Govee-Lampen (LED-Segmente, Farbverlauf, Musik, Szenen) wurden als eigene Geräte erkannt und mehrfach aufgelistet
 
 ### 1.3.0
 - Schalter- und Lampen-Instanzen per Auswahlliste der installierten Instanzen (Mehrfachauswahl); kommagetrennter Text aus älteren Exporten wird weiter gelesen

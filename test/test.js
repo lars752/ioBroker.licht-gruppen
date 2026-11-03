@@ -44,6 +44,10 @@ const lanLamp = (id, name) => ({
     [`govee-smart.0.devices.${id}.control`]: ch({ de: 'Steuerung', en: 'Control' }),
     [`govee-smart.0.devices.${id}.control.power`]: st({ de: 'Ein/Aus', en: 'Power' }, 'switch'),
     [`govee-smart.0.devices.${id}.control.brightness`]: { type: 'state', common: { name: 'Helligkeit', type: 'number', role: 'level.brightness', write: true } },
+    // Nebenfunktionen von govee-smart: dürfen NICHT als eigene Lampe erkannt werden
+    [`govee-smart.0.devices.${id}.control.gradient_toggle`]: st('Farbverlauf', 'switch'),
+    [`govee-smart.0.devices.${id}.segments`]: ch({ de: 'LED-Segmente', en: 'LED segments' }),
+    [`govee-smart.0.devices.${id}.segments.manual_mode`]: st('Manuelle Segmente aktiv', 'switch'),
     [`govee-smart.0.devices.${id}.info`]: ch('Geräteinformationen'),
     [`govee-smart.0.devices.${id}.info.online`]: st('Online', 'indicator.reachable', { write: false }),
     [`govee-smart.0.devices.${id}.info.name`]: { type: 'state', common: { name: 'Name', type: 'string', role: 'info.name', write: false } },
