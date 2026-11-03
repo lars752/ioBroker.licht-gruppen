@@ -392,7 +392,7 @@ const SW_F2 = 'matter.0.controller.222.2.power';
     });
     await test('Räume: Erkennung im Gerätenamen und Gruppen-ID', () => {
         const cases = { 'Flur Decke': 'Flur', 'Badezimmerlicht': 'Badezimmer', 'Bad Taster': 'Badezimmer', 'Küche Schalter': 'Kueche', Esszimmer: 'Esszimmer',
-            'Flurlicht': 'Flur', 'Treppenhaus oben': 'Treppe', 'Jagdzimmer Decke': 'Jagdzimmer', 'Jagdzimmerlicht': 'Jagdzimmer', 'Jagdstube': 'Jagdzimmer', 'Gäste-WC Spiegel': 'WC', 'H60A4_1a2b': '', Kindergarten: '', 'Sonoff M5': '' };
+            'Flurlicht': 'Flur', 'Treppenhaus oben': 'Treppe', 'Korridor Decke': 'Korridor', 'Korridorlicht': 'Korridor', 'Jagdzimmer Decke': 'Jagdzimmer', 'Jagdzimmerlicht': 'Jagdzimmer', 'Jagdstube': 'Jagdzimmer', 'Gäste-WC Spiegel': 'WC', 'H60A4_1a2b': '', Kindergarten: '', 'Sonoff M5': '' };
         for (const [name, room] of Object.entries(cases)) assert.strictEqual(roomFromName(name), room, name);
         assert.strictEqual(groupId('Küche & Esszimmer'), 'Kueche_Esszimmer');
         assert.strictEqual(groupId('Info'), '');

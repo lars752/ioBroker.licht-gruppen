@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "licht-gruppen",
-        "version": "1.3.2",
+        "version": "1.3.3",
         "news": {
+            "1.3.3": {
+                "en": "New room type Korridor (corridor), formerly detected as Flur",
+                "de": "Neuer Raumtyp Korridor, bisher als Flur erkannt"
+            },
             "1.3.2": {
                 "en": "New room type Jagdzimmer (hunting room) for pre-filling groups",
                 "de": "Neuer Raumtyp Jagdzimmer zur Vorbelegung der Gruppen"
