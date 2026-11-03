@@ -172,7 +172,20 @@ npm install
 npm test
 ```
 
+## Sonoff M5 über sonofflan (empfohlen)
+
+Der Sonoff M5 meldet über Matter keinen Tastendruck, solange das Relais abgekoppelt ist. Der Adapter [sonofflan](https://github.com/lars752/ioBroker.sonofflan) liefert ihn dagegen über LAN/eWeLink als Datenpunkt `action`.
+
+1. Beim M5 in der eWeLink-App das Relais **entkoppeln** (Detach Relay), damit der Taster nicht mehr direkt die Last schaltet.
+2. In `licht-gruppen` bei den Schalter-Instanzen `sonofflan.0` auswählen (und `matter.0` für dieselben Schalter entfernen, sonst erscheint jeder Schalter doppelt).
+3. „Geräte einlesen und Gruppen vorbelegen“ drücken.
+
+Verhalten: `single` schaltet die Gruppe um. `double`, `hold` und `triple` werden mit Hinweis im Log ignoriert (sonofflan meldet kein Loslassen, deshalb ist Dimmen per Lang-Druck mit diesen Schaltern nicht möglich). Beim Doppelschalter (`channel1`, `channel2`) gehört `button_1_…` zu Kanal 1 und `button_2_…` zu Kanal 2. Das Relais selbst (`channelN`) wird nicht geschaltet, nur gelesen.
+
 ## Changelog
+
+### 1.4.0
+- Neu: sonofflan als Schalterquelle. Tasten-Ereignis `action` (`single`, `button_N_single`) schaltet die Gruppe um, auch bei Doppelschaltern; Relais und Status-LED werden nicht als Schalter erkannt
 
 ### 1.3.4
 - Fix: Stand der Schalter nicht synchron zu den Lampen (z. B. Lampe per App geschaltet, Rückmeldung noch nicht angekommen), blieb der erste Druck wirkungslos; jetzt schaltet er die Lampen um

@@ -121,6 +121,15 @@ function setup(over = {}) {
     });
     return { cfg, entries, devices, missing, core, w, sets, t, tick: (ms) => ft.tick(ms, core), jobs: ft.jobs };
 }
+const sonoff = (id, name, channels) => {
+    const o = { [`sonofflan.0.${id}`]: { type: 'device', common: { name } } };
+    for (let i = 1; i <= channels; i++) o[`sonofflan.0.${id}.channel${i}`] = { type: 'state', common: { name: `Kanal ${i}`, type: 'boolean', role: 'switch', read: true, write: true } };
+    o[`sonofflan.0.${id}.led`] = { type: 'state', common: { name: 'Status-LED', type: 'boolean', role: 'switch', read: true, write: true } };
+    o[`sonofflan.0.${id}.action`] = { type: 'state', common: { name: 'Letzte Tastenaktion', type: 'string', role: 'text', read: true, write: false } };
+    o[`sonofflan.0.${id}.info.name`] = { type: 'state', common: { name: 'Name', type: 'string', role: 'info.name', read: true, write: false } };
+    return o;
+};
+const SONOFF = { ...sonoff('10028c78b0', 'Esszimmer', 1), ...sonoff('10028c7a67', 'Flur Doppel', 2) };
 const ack = (val) => ({ val, ack: true });
 const SW_WZ = 'matter.0.controller.111.1.power';
 const SW_F1 = 'matter.0.controller.222.1.power';
@@ -430,6 +439,33 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         assert.ok(r.rooms.includes('Flur') && r.rooms.includes('Badezimmer') && !r.rooms.includes(''));
         assert.ok(r.open === r.rows.filter((x) => !x.group).length);
         assert.ok(r.filled.includes('Flur Decke') && !r.filled.includes('Küche Schalter'));
+    });
+    await test('sonofflan: Tasten-Ereignisse (action) schalten die Gruppe, Relais bleibt unberührt', async () => {
+        const cfg = normalizeConfig({ switchAdapters: ['sonofflan.0'], lampAdapters: ['govee-smart.0'], names: NAMES }, silent).cfg;
+        const entries = catalog(cfg, { 'sonofflan.0': SONOFF, 'govee-smart.0': GOVEE });
+        const sw = entries.filter((e) => e.kind === 'switch');
+        assert.deepStrictEqual(sw.map((e) => e.label), ['Esszimmer', 'Flur Doppel – Kanal 1', 'Flur Doppel – Kanal 2']);
+        assert.ok(sw.every((e) => e.actionId && !e.pressId));
+        assert.deepStrictEqual(sw.map((e) => e.actionOutlet), [null, 0, 1]);
+        const rows = [{ group: 'Esszimmer', device: 'Esszimmer' }, { group: 'Esszimmer', device: 'Wohnzimmer Decke' }, { group: 'Flur', device: 'Flur Doppel – Kanal 2' }, { group: 'Flur', device: 'Flur Decke' }];
+        const { devices, missing } = resolveRows(rows, entries);
+        assert.deepStrictEqual(missing, []);
+        const sets = [];
+        const core = new LightCore({ cfg, devices, log: silent, now: () => 1e6, timers: fakeTimers({ now: 1e6 }).timers,
+            io: { write: async () => {}, setSource: async (id, v) => { sets.push([id, v]); } } });
+        const A = 'sonofflan.0.10028c78b0.action';
+        const A2 = 'sonofflan.0.10028c7a67.action';
+        await core.init(L_WZ, ack(false)); await core.init(L_F, ack(false)); await core.afterInit();
+        assert.strictEqual(await core.handle(A, ack('single')), 'switched');
+        assert.deepStrictEqual(sets, [[L_WZ, true]]);
+        assert.strictEqual(await core.handle('sonofflan.0.10028c78b0.channel1', ack(true)), 'mirror');
+        assert.strictEqual(await core.handle(A, ack('double')), 'unsupported');
+        assert.strictEqual(await core.handle(A, ack('hold')), 'unsupported');
+        assert.strictEqual(await core.handle(A2, ack('button_1_single')), 'other-button');
+        assert.deepStrictEqual(sets, [[L_WZ, true]]);
+        assert.strictEqual(await core.handle(A2, ack('button_2_single')), 'switched');
+        assert.deepStrictEqual(sets, [[L_WZ, true], [L_F, true]]);
+        assert.ok(!sets.some(([id]) => id.startsWith('sonofflan')));
     });
     await test('Export / Import', () => {
         const ex = exportConfig({ devices: ROWS, names: NAMES, switchMode: 'toggle', lampAdapters: 'govee.0' });

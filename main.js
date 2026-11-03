@@ -9,6 +9,8 @@ const OBJECT_TYPES = ['device', 'channel', 'folder', 'state'];
 // Was aus einer Meldung der Quelle wurde (für das Log); ALWAYS = immer als info, sonst nur bei "Schaltvorgänge im Log"
 const RESULT_TEXT = {
     switched: 'Gruppe geschaltet',
+    'other-button': 'andere Taste desselben Geräts, ignoriert',
+    unsupported: 'Aktion (double/hold/…) wird nicht unterstützt, ignoriert – nur "single" schaltet',
     unchanged: 'keine Aktion: Gruppe und Lampen stehen schon auf diesem Zustand',
     mirror: 'keine Aktion: Zustand nur gespiegelt, der Taster-Datenpunkt (PRESS) entscheidet',
     invalid: 'ungültiger Wert, ignoriert',
@@ -23,7 +25,7 @@ const RESULT_TEXT = {
     'dim-stop': 'Dimmen beendet',
     release: 'Taste losgelassen',
 };
-const ALWAYS = new Set(['unchanged', 'mirror', 'invalid', 'no-dimmable']);
+const ALWAYS = new Set(['unchanged', 'mirror', 'invalid', 'no-dimmable', 'unsupported']);
 
 class LichtGruppen extends utils.Adapter {
     constructor(options) {
@@ -145,7 +147,7 @@ class LichtGruppen extends utils.Adapter {
         const entries = await this.scan(cfg);
         this.log.info(`Erkannt: ${entries.filter((e) => e.kind === 'switch').length} Schalter, ${entries.filter((e) => e.kind === 'lamp').length} Lampen`);
         for (const e of entries) {
-            const extra = [e.pressId && `kurz: ${e.pressId}`, e.longId && `lang: ${e.longId}`, e.levelId && `Helligkeit: ${e.levelId}`].filter(Boolean).join(', ');
+            const extra = [e.pressId && `kurz: ${e.pressId}`, e.longId && `lang: ${e.longId}`, e.actionId && `Taste: ${e.actionId}`, e.levelId && `Helligkeit: ${e.levelId}`].filter(Boolean).join(', ');
             this.log.debug(`${e.kind === 'switch' ? 'Schalter' : 'Lampe'} "${e.label}"${e.renamed ? ` (Quelle: ${e.sourceLabel})` : ''} -> ${e.onId || e.id}${extra ? ` (${extra})` : ''}`);
         }
         const { devices, missing } = resolveRows(cfg.rows, entries);
@@ -179,7 +181,7 @@ class LichtGruppen extends utils.Adapter {
         await this.core.afterInit();
         await this.setStateAsync('info.connection', devices.length > 0, true);
         for (const [group, list] of Object.entries(model.groups)) {
-            const part = (kind) => list.filter((d) => d.kind === kind).map((d) => `${d.label} [${d.onId || d.pressId || d.id}]`).join(', ') || '-';
+            const part = (kind) => list.filter((d) => d.kind === kind).map((d) => `${d.label} [${d.onId || d.pressId || d.actionId || d.id}]`).join(', ') || '-';
             this.log.info(`Gruppe ${group}: Schalter/Taster: ${part('switch')} | Lampen: ${part('lamp')}`);
             if (!list.some((d) => d.kind === 'switch') || !list.some((d) => d.kind === 'lamp')) this.log.warn(`Gruppe ${group} hat ${list.some((d) => d.kind === 'switch') ? 'keine Lampe' : 'keinen Schalter'} – es passiert nichts`);
         }
