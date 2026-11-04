@@ -195,7 +195,7 @@ class LichtGruppen extends utils.Adapter {
         await this.watchAlive(devices);
         await this.setStateAsync('info.connection', devices.length > 0, true);
         for (const [group, list] of Object.entries(model.groups)) {
-            const part = (kind) => list.filter((d) => d.kind === kind).map((d) => `${d.label} [${d.onId || d.pressId || d.actionId || d.id}]`).join(', ') || '-';
+            const part = (kind) => list.filter((d) => d.kind === kind).map((d) => { const id = d.onId || d.pressId || d.actionId || d.id; return d.label.includes(`[${id}]`) ? d.label : `${d.label} [${id}]`; }).join(', ') || '-';
             this.log.info(`Gruppe ${group}: Schalter/Taster: ${part('switch')} | Lampen: ${part('lamp')}`);
             if (!list.some((d) => d.kind === 'switch') || !list.some((d) => d.kind === 'lamp')) this.log.warn(`Gruppe ${group} hat ${list.some((d) => d.kind === 'switch') ? 'keine Lampe' : 'keinen Schalter'} – es passiert nichts`);
         }

@@ -190,6 +190,9 @@ Meldet ein Gerät über seinen Datenpunkt `info.reachable` (sonofflan), `info.on
 
 ## Changelog
 
+### 1.5.2
+- Log: Gruppenzeile zeigt den Datenpunkt nicht mehr doppelt
+
 ### 1.5.1
 - Instanz-Auswahl: vereinigt Objekt-Sicht und direkte Abfrage und zeigt bereits eingestellte Instanzen immer an (bei nicht gefundenen mit Hinweis); Beschreibung nennt sonofflan
 
