@@ -41,8 +41,8 @@
             "en": "Switch instances (source of switches and buttons)"
           },
           "help": {
-            "de": "Mehrfachauswahl, z. B. matter.0",
-            "en": "Multiple selection, e.g. matter.0"
+            "de": "Mehrfachauswahl, z. B. matter.0, sonofflan.0",
+            "en": "Multiple selection, e.g. matter.0, sonofflan.0"
           },
           "newLine": true
         },
@@ -87,8 +87,8 @@
           "newLine": true,
           "sm": 12,
           "text": {
-            "de": "Taster: Jede Betätigung schaltet die Gruppe um (aus wird an, an wird aus). Die Schalter werden dabei nicht nachgeführt. Taster, die kurz und lang unterscheiden (Matter Generic Switch, Datenpunkte PRESS und PRESS_LONG): kurz drücken schaltet um, lang drücken dimmt (siehe Lang-Druck).",
-            "en": "Push button: every press toggles the group (off becomes on, on becomes off). The switches are not updated. Buttons that distinguish short and long (Matter Generic Switch, datapoints PRESS and PRESS_LONG): a short press toggles, a long press dims (see long press)."
+            "de": "Taster: Jede Betätigung schaltet die Gruppe um (aus wird an, an wird aus). Die Schalter werden dabei nicht nachgeführt. Taster, die kurz und lang unterscheiden (Matter Generic Switch, Datenpunkte PRESS und PRESS_LONG): kurz drücken schaltet um, lang drücken dimmt (siehe Lang-Druck). Sonoff M5 über sonofflan: Ist das Relais abgekoppelt, schaltet die Taste (action = single) um, ist es gekoppelt, zählt der Relais-Zustand wie bei einem Schalter. Das wird automatisch erkannt.",
+            "en": "Push button: every press toggles the group (off becomes on, on becomes off). The switches are not updated. Buttons that distinguish short and long (Matter Generic Switch, datapoints PRESS and PRESS_LONG): a short press toggles, a long press dims (see long press). Sonoff M5 via sonofflan: with a detached relay the button (action = single) toggles, with a coupled relay the relay state counts like a switch. This is detected automatically."
           }
         },
         "_beh3": {

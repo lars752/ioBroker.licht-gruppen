@@ -70,16 +70,28 @@ class LichtGruppen extends utils.Adapter {
 
     /** Alle installierten Instanzen als Auswahlliste (ohne diesen Adapter und reine Infrastruktur). */
     async listInstances() {
-        const view = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' });
+        // Zwei Quellen vereinigen: Objekt-Sicht und direkte Abfrage (manche Instanzen fehlen in einer von beiden)
+        const view = await this.getObjectViewAsync('system', 'instance', { startkey: 'system.adapter.', endkey: 'system.adapter.\u9999' }).catch(() => null);
+        const direct = (await this.getForeignObjectsAsync('system.adapter.*', 'instance').catch(() => null)) || {};
+        const rows = new Map();
+        for (const row of (view && view.rows) || []) rows.set(String(row.id), row);
+        for (const [id, obj] of Object.entries(direct)) if (!rows.has(id)) rows.set(id, { id, value: obj });
         const skip = new Set([this.name, 'admin', 'discovery']);
         const out = [];
-        for (const row of (view && view.rows) || []) {
+        for (const row of rows.values()) {
             const id = String(row.id || '').replace(/^system\.adapter\./, '');
             const adapter = id.replace(/\.\d+$/, '');
             const common = (row.value && row.value.common) || {};
             if (!/\.\d+$/.test(id) || skip.has(adapter) || ['storage', 'visualization'].includes(common.type)) continue;
             const title = nameOf({ common: { name: common.titleLang || common.title || '' } }, '');
             out.push({ value: id, label: title && title.toLowerCase() !== adapter ? `${id} (${title})` : id });
+        }
+        // Bereits eingestellte Instanzen immer anbieten, auch wenn sie nicht gefunden wurden (sonst steht nur ein Chip ohne Titel in der Auswahl)
+        for (const key of ['switchAdapters', 'lampAdapters']) {
+            const cur = this.config && this.config[key];
+            for (const v of Array.isArray(cur) ? cur : String(cur || '').split(',').map((x) => x.trim()).filter(Boolean)) {
+                if (!out.some((o) => o.value === v)) out.push({ value: v, label: `${v} (Instanz nicht gefunden)` });
+            }
         }
         return out.sort((a, b) => a.value.localeCompare(b.value, 'de', { numeric: true }));
     }

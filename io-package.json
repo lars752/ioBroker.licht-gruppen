@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "licht-gruppen",
-        "version": "1.5.0",
+        "version": "1.5.1",
         "news": {
+            "1.5.1": {
+                "en": "Instance selection also lists instances missing in the object view and keeps configured ones; texts mention sonofflan",
+                "de": "Instanz-Auswahl listet auch Instanzen, die in der Objektsicht fehlen, und behält eingestellte; Texte nennen sonofflan"
+            },
             "1.5.0": {
                 "en": "sonofflan switches: detached mode detected automatically (detach datapoint); coupled relay state is used as signal",
                 "de": "sonofflan-Schalter: abgekoppelter Modus wird automatisch erkannt (Datenpunkt detach); bei gekoppeltem Relais zählt der Relais-Zustand"

@@ -190,6 +190,9 @@ Meldet ein Gerät über seinen Datenpunkt `info.reachable` (sonofflan), `info.on
 
 ## Changelog
 
+### 1.5.1
+- Instanz-Auswahl: vereinigt Objekt-Sicht und direkte Abfrage und zeigt bereits eingestellte Instanzen immer an (bei nicht gefundenen mit Hinweis); Beschreibung nennt sonofflan
+
 ### 1.5.0
 - sonofflan-Schalter: abgekoppelter oder gekoppelter Modus wird automatisch erkannt (`detach`/`detachN`); gekoppelt zählt der Relais-Zustand, abgekoppelt die Taste. Voraussetzung: sonofflan ab 1.1.0 (ohne `detach` gilt wie bisher die Taste)
 
