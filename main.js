@@ -9,6 +9,7 @@ const OBJECT_TYPES = ['device', 'channel', 'folder', 'state'];
 // Was aus einer Meldung der Quelle wurde (für das Log); ALWAYS = immer als info, sonst nur bei "Schaltvorgänge im Log"
 const RESULT_TEXT = {
     switched: 'Gruppe geschaltet',
+    detach: 'Relais-Modus gemeldet (abgekoppelt: Taste zählt, sonst Relais-Zustand)',
     'other-button': 'andere Taste desselben Geräts, ignoriert',
     unsupported: 'Aktion (double/hold/…) wird nicht unterstützt, ignoriert – nur "single" schaltet',
     unchanged: 'keine Aktion: Gruppe und Lampen stehen schon auf diesem Zustand',

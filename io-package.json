@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "licht-gruppen",
-        "version": "1.4.1",
+        "version": "1.5.0",
         "news": {
+            "1.5.0": {
+                "en": "sonofflan switches: detached mode detected automatically (detach datapoint); coupled relay state is used as signal",
+                "de": "sonofflan-Schalter: abgekoppelter Modus wird automatisch erkannt (Datenpunkt detach); bei gekoppeltem Relais zählt der Relais-Zustand"
+            },
             "1.4.1": {
                 "en": "Unreachable devices (defective, offline) are reported in the log and in info.offline; groups keep working",
                 "de": "Nicht erreichbare Geräte (defekt, offline) werden im Log und in info.offline gemeldet; die Gruppen arbeiten weiter"

@@ -176,7 +176,9 @@ npm test
 
 Der Sonoff M5 meldet über Matter keinen Tastendruck, solange das Relais abgekoppelt ist. Der Adapter [sonofflan](https://github.com/lars752/ioBroker.sonofflan) liefert ihn dagegen über LAN/eWeLink als Datenpunkt `action`.
 
-1. Beim M5 in der eWeLink-App das Relais **entkoppeln** (Detach Relay), damit der Taster nicht mehr direkt die Last schaltet.
+1. Beim M5 entscheidest du, wie er arbeitet. Der Adapter erkennt den Modus selbst (sonofflan-Datenpunkt `detach`, ab sonofflan 1.1.0):
+   - **Relais abgekoppelt** (eWeLink: Detach Relay): Der Taster schaltet die Last nicht mehr, ein Druck (`action = single`) schaltet die Gruppe.
+   - **Relais gekoppelt** (z. B. wenn die Lampe dauerhaft Strom hat): Der Relais-Zustand ist das Signal wie bei Matter („Schalter“-Modus), die Rückmeldung führt das Relais den Lampen nach.
 2. In `licht-gruppen` bei den Schalter-Instanzen `sonofflan.0` auswählen (und `matter.0` für dieselben Schalter entfernen, sonst erscheint jeder Schalter doppelt).
 3. „Geräte einlesen und Gruppen vorbelegen“ drücken.
 
@@ -187,6 +189,9 @@ Verhalten: `single` schaltet die Gruppe um. `double`, `hold` und `triple` werden
 Meldet ein Gerät über seinen Datenpunkt `info.reachable` (sonofflan), `info.online` (govee-smart) oder `info.connection` (matter), dass es nicht erreichbar ist, schreibt der Adapter eine Warnung ins Log (beim Start und bei jeder Änderung, auch „Wieder erreichbar“) und führt es in `licht-gruppen.0.info.offline`. Die Gruppe arbeitet mit den übrigen Schaltern und Lampen weiter. Ein dauerhaft defektes Gerät entfernst du, indem du seine Zeile in der Tabelle löschst. Verschwindet es aus der Quell-Instanz, meldet der Adapter es als „nicht gefunden“ und überspringt es.
 
 ## Changelog
+
+### 1.5.0
+- sonofflan-Schalter: abgekoppelter oder gekoppelter Modus wird automatisch erkannt (`detach`/`detachN`); gekoppelt zählt der Relais-Zustand, abgekoppelt die Taste. Voraussetzung: sonofflan ab 1.1.0 (ohne `detach` gilt wie bisher die Taste)
 
 ### 1.4.1
 - Neu: Warnung im Log und Datenpunkt `info.offline` für nicht erreichbare Geräte; Gruppen laufen mit den übrigen Geräten weiter

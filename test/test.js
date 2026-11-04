@@ -124,6 +124,7 @@ function setup(over = {}) {
 const sonoff = (id, name, channels) => {
     const o = { [`sonofflan.0.${id}`]: { type: 'device', common: { name } } };
     for (let i = 1; i <= channels; i++) o[`sonofflan.0.${id}.channel${i}`] = { type: 'state', common: { name: `Kanal ${i}`, type: 'boolean', role: 'switch', read: true, write: true } };
+    for (let i = 1; i <= channels; i++) o[`sonofflan.0.${id}.${channels === 1 ? 'detach' : `detach${i}`}`] = { type: 'state', common: { name: 'abgekoppelt', type: 'boolean', role: 'indicator', read: true, write: false } };
     o[`sonofflan.0.${id}.led`] = { type: 'state', common: { name: 'Status-LED', type: 'boolean', role: 'switch', read: true, write: true } };
     o[`sonofflan.0.${id}.action`] = { type: 'state', common: { name: 'Letzte Tastenaktion', type: 'string', role: 'text', read: true, write: false } };
     o[`sonofflan.0.${id}.info.reachable`] = { type: 'state', common: { name: 'Erreichbar', type: 'boolean', role: 'indicator.reachable', read: true, write: false } };
@@ -449,6 +450,7 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         assert.ok(sw.every((e) => e.actionId && !e.pressId));
         assert.deepStrictEqual(sw.map((e) => e.actionOutlet), [null, 0, 1]);
         assert.strictEqual(sw[0].aliveId, 'sonofflan.0.10028c78b0.info.reachable');
+        assert.deepStrictEqual(sw.map((e) => e.detachId), ['sonofflan.0.10028c78b0.detach', 'sonofflan.0.10028c7a67.detach1', 'sonofflan.0.10028c7a67.detach2']);
         const rows = [{ group: 'Esszimmer', device: 'Esszimmer' }, { group: 'Esszimmer', device: 'Wohnzimmer Decke' }, { group: 'Flur', device: 'Flur Doppel – Kanal 2' }, { group: 'Flur', device: 'Flur Decke' }];
         const { devices, missing } = resolveRows(rows, entries);
         assert.deepStrictEqual(missing, []);
@@ -468,6 +470,26 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         assert.strictEqual(await core.handle(A2, ack('button_2_single')), 'switched');
         assert.deepStrictEqual(sets, [[L_WZ, true], [L_F, true]]);
         assert.ok(!sets.some(([id]) => id.startsWith('sonofflan')));
+    });
+    await test('sonofflan: Relais nicht abgekoppelt -> Relais-Zustand schaltet und wird nachgeführt, abgekoppelt -> Taste', async () => {
+        const cfg = normalizeConfig({ switchAdapters: ['sonofflan.0'], lampAdapters: ['govee-smart.0'], names: NAMES }, silent).cfg;
+        const entries = catalog(cfg, { 'sonofflan.0': SONOFF, 'govee-smart.0': GOVEE });
+        const rows = [{ group: 'Esszimmer', device: 'Esszimmer' }, { group: 'Esszimmer', device: 'Wohnzimmer Decke' }];
+        const { devices } = resolveRows(rows, entries);
+        const sets = [];
+        const core = new LightCore({ cfg, devices, log: silent, now: () => 1e6, timers: fakeTimers({ now: 1e6 }).timers,
+            io: { write: async () => {}, setSource: async (id, v) => { sets.push([id, v]); } } });
+        const R = 'sonofflan.0.10028c78b0.channel1';
+        const D = 'sonofflan.0.10028c78b0.detach';
+        const A = 'sonofflan.0.10028c78b0.action';
+        await core.init(D, ack(false)); await core.init(R, ack(false)); await core.init(L_WZ, ack(false)); await core.afterInit();
+        // nicht abgekoppelt: Relais-Zustand ist das Signal
+        assert.strictEqual(await core.handle(R, ack(true)), 'switched');
+        assert.deepStrictEqual(sets, [[L_WZ, true]]);
+        // abgekoppelt: Relais wird nur gespiegelt, die Taste schaltet
+        assert.strictEqual(await core.handle(D, ack(true)), 'detach');
+        assert.strictEqual(await core.handle(R, ack(false)), 'mirror');
+        assert.strictEqual(await core.handle(A, ack('single')), 'switched');
     });
     await test('Export / Import', () => {
         const ex = exportConfig({ devices: ROWS, names: NAMES, switchMode: 'toggle', lampAdapters: 'govee.0' });
