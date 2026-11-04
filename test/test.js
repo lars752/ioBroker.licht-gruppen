@@ -126,6 +126,7 @@ const sonoff = (id, name, channels) => {
     for (let i = 1; i <= channels; i++) o[`sonofflan.0.${id}.channel${i}`] = { type: 'state', common: { name: `Kanal ${i}`, type: 'boolean', role: 'switch', read: true, write: true } };
     o[`sonofflan.0.${id}.led`] = { type: 'state', common: { name: 'Status-LED', type: 'boolean', role: 'switch', read: true, write: true } };
     o[`sonofflan.0.${id}.action`] = { type: 'state', common: { name: 'Letzte Tastenaktion', type: 'string', role: 'text', read: true, write: false } };
+    o[`sonofflan.0.${id}.info.reachable`] = { type: 'state', common: { name: 'Erreichbar', type: 'boolean', role: 'indicator.reachable', read: true, write: false } };
     o[`sonofflan.0.${id}.info.name`] = { type: 'state', common: { name: 'Name', type: 'string', role: 'info.name', read: true, write: false } };
     return o;
 };
@@ -447,6 +448,7 @@ const SW_F2 = 'matter.0.controller.222.2.power';
         assert.deepStrictEqual(sw.map((e) => e.label), ['Esszimmer', 'Flur Doppel – Kanal 1', 'Flur Doppel – Kanal 2']);
         assert.ok(sw.every((e) => e.actionId && !e.pressId));
         assert.deepStrictEqual(sw.map((e) => e.actionOutlet), [null, 0, 1]);
+        assert.strictEqual(sw[0].aliveId, 'sonofflan.0.10028c78b0.info.reachable');
         const rows = [{ group: 'Esszimmer', device: 'Esszimmer' }, { group: 'Esszimmer', device: 'Wohnzimmer Decke' }, { group: 'Flur', device: 'Flur Doppel – Kanal 2' }, { group: 'Flur', device: 'Flur Decke' }];
         const { devices, missing } = resolveRows(rows, entries);
         assert.deepStrictEqual(missing, []);

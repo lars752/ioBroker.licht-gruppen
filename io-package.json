@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "licht-gruppen",
-        "version": "1.4.0",
+        "version": "1.4.1",
         "news": {
+            "1.4.1": {
+                "en": "Unreachable devices (defective, offline) are reported in the log and in info.offline; groups keep working",
+                "de": "Nicht erreichbare Geräte (defekt, offline) werden im Log und in info.offline gemeldet; die Gruppen arbeiten weiter"
+            },
             "1.4.0": {
                 "en": "Support for sonofflan: button events (action = single) of Sonoff M5 with detached relay switch the group",
                 "de": "sonofflan als Schalterquelle: Tasten-Ereignis (action = single) des Sonoff M5 mit abgekoppeltem Relais schaltet die Gruppe"
@@ -131,6 +135,19 @@
                 "read": true,
                 "write": false,
                 "def": false
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.offline",
+            "type": "state",
+            "common": {
+                "role": "text",
+                "name": "Nicht erreichbare Geräte (Gruppe/Klartext)",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "def": ""
             },
             "native": {}
         },

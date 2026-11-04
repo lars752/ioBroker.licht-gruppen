@@ -182,7 +182,14 @@ Der Sonoff M5 meldet über Matter keinen Tastendruck, solange das Relais abgekop
 
 Verhalten: `single` schaltet die Gruppe um. `double`, `hold` und `triple` werden mit Hinweis im Log ignoriert (sonofflan meldet kein Loslassen, deshalb ist Dimmen per Lang-Druck mit diesen Schaltern nicht möglich). Beim Doppelschalter (`channel1`, `channel2`) gehört `button_1_…` zu Kanal 1 und `button_2_…` zu Kanal 2. Das Relais selbst (`channelN`) wird nicht geschaltet, nur gelesen.
 
+## Defekte oder offline Geräte
+
+Meldet ein Gerät über seinen Datenpunkt `info.reachable` (sonofflan), `info.online` (govee-smart) oder `info.connection` (matter), dass es nicht erreichbar ist, schreibt der Adapter eine Warnung ins Log (beim Start und bei jeder Änderung, auch „Wieder erreichbar“) und führt es in `licht-gruppen.0.info.offline`. Die Gruppe arbeitet mit den übrigen Schaltern und Lampen weiter. Ein dauerhaft defektes Gerät entfernst du, indem du seine Zeile in der Tabelle löschst. Verschwindet es aus der Quell-Instanz, meldet der Adapter es als „nicht gefunden“ und überspringt es.
+
 ## Changelog
+
+### 1.4.1
+- Neu: Warnung im Log und Datenpunkt `info.offline` für nicht erreichbare Geräte; Gruppen laufen mit den übrigen Geräten weiter
 
 ### 1.4.0
 - Neu: sonofflan als Schalterquelle. Tasten-Ereignis `action` (`single`, `button_N_single`) schaltet die Gruppe um, auch bei Doppelschaltern; Relais und Status-LED werden nicht als Schalter erkannt

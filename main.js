@@ -105,7 +105,7 @@ class LichtGruppen extends utils.Adapter {
 
     /** Legt Kanäle und Datenpunkte an und entfernt Altlasten. */
     async ensureStructure(model, prune) {
-        const expected = new Set(['info', 'info.connection', 'info.missing']);
+        const expected = new Set(['info', 'info.connection', 'info.missing', 'info.offline']);
         for (const ch of model.channels) {
             expected.add(ch.id);
             await this.extendObjectAsync(ch.id, { type: 'channel', common: { name: ch.name }, native: {} });
@@ -179,6 +179,7 @@ class LichtGruppen extends utils.Adapter {
             await this.core.init(id, await this.getForeignStateAsync(id));
         }
         await this.core.afterInit();
+        await this.watchAlive(devices);
         await this.setStateAsync('info.connection', devices.length > 0, true);
         for (const [group, list] of Object.entries(model.groups)) {
             const part = (kind) => list.filter((d) => d.kind === kind).map((d) => `${d.label} [${d.onId || d.pressId || d.actionId || d.id}]`).join(', ') || '-';
@@ -188,8 +189,45 @@ class LichtGruppen extends utils.Adapter {
         this.log.info(`Adapter gestartet: ${Object.keys(model.groups).length} Gruppe(n), ${devices.length} Gerät(e), Modus ${cfg.switchMode === 'toggle' ? 'Taster' : 'Schalter'}`);
     }
 
+    /** Meldet Geräte, die nicht erreichbar sind (defekt, ausgesteckt, kein WLAN). Die Gruppen arbeiten mit den übrigen Geräten weiter. */
+    async watchAlive(devices) {
+        this.alive = new Map(); // Datenpunkt -> { labels: [Gruppe/Gerät], val }
+        for (const d of devices) {
+            if (!d.aliveId) continue;
+            const e = this.alive.get(d.aliveId) || { labels: [], val: null };
+            e.labels.push(`${d.group}/${d.label}`);
+            this.alive.set(d.aliveId, e);
+        }
+        for (const [id, e] of this.alive) {
+            this.subscribeForeignStates(id);
+            const st = await this.getForeignStateAsync(id);
+            e.val = st ? st.val === true || st.val === 1 || st.val === 'true' : null;
+            if (e.val === false) this.log.warn(`Nicht erreichbar: ${e.labels.join(', ')} (${id}) – die Gruppe arbeitet mit den übrigen Geräten weiter. Bei dauerhaftem Ausfall die Zeile in der Tabelle entfernen`);
+        }
+        await this.publishOffline();
+    }
+
+    async publishOffline() {
+        const list = [...this.alive.values()].filter((e) => e.val === false).flatMap((e) => e.labels);
+        await this.setStateChangedAsync('info.offline', { val: list.join('\n'), ack: true });
+    }
+
+    onAliveChange(id, state) {
+        const e = this.alive && this.alive.get(id);
+        if (!e || !state) return false;
+        const val = state.val === true || state.val === 1 || state.val === 'true';
+        if (val !== e.val) {
+            e.val = val;
+            if (val) this.log.info(`Wieder erreichbar: ${e.labels.join(', ')}`);
+            else this.log.warn(`Nicht erreichbar: ${e.labels.join(', ')} (${id}) – die Gruppe arbeitet mit den übrigen Geräten weiter`);
+            this.publishOffline().catch(() => {});
+        }
+        return !this.core.bySource.has(id);
+    }
+
     onStateChange(id, state) {
         if (!this.core || !state) return;
+        if (this.onAliveChange(id, state)) return;
         const prefix = `${this.namespace}.`;
         if (id.startsWith(prefix)) {
             const rel = id.slice(prefix.length);
