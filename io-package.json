@@ -65,7 +65,7 @@
             "de": "Verbindet Schalter (z. B. Sonoff Matter über matter.0) mit Lampen (z. B. Govee über govee-smart) in Gruppen, angesprochen über Klartext-Gerätenamen; Lang-Druck dimmt"
         },
         "authors": [
-            "Lars"
+            "lars752"
         ],
         "keywords": [
             "light",
